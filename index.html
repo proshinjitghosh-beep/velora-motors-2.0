@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VELORA Motors – Drive the Future</title>
+<style>
+:root{color-scheme:dark;--bg:#07080b;--fg:#f2f4f8;--mut:#8b93a3;--acc:#ff3b30;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;margin:0}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:"Segoe UI",system-ui,Helvetica,Arial,sans-serif;overflow-x:hidden}
+canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+nav{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:18px 5vw;background:linear-gradient(#07080bcc,transparent)}
+.logo{font-weight:800;letter-spacing:.35em}.logo b{color:var(--acc)}
+nav a{color:var(--fg);text-decoration:none;font-size:12px;letter-spacing:.12em;margin-left:20px;opacity:.8}
+section{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:90px 5vw 170px;pointer-events:none}
+section>*{pointer-events:auto}
+h1{font-size:clamp(42px,8vw,108px);line-height:.95;font-weight:800;letter-spacing:-.02em;max-width:8em}h1 span{color:var(--acc)}
+h2{font-size:clamp(28px,4.5vw,54px);margin-bottom:12px}
+.lead{color:var(--mut);max-width:30em;margin:18px 0;line-height:1.6}
+.btn{display:inline-block;padding:13px 28px;background:var(--acc);color:#fff;border:0;border-radius:40px;font-size:13px;letter-spacing:.1em;cursor:pointer;text-decoration:none}
+.right{align-items:flex-end;text-align:right}.right .lead{margin-left:auto}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;max-width:700px;margin-top:14px}
+.card{background:#ffffff0f;backdrop-filter:blur(10px);border:1px solid #ffffff18;border-radius:14px;padding:18px;cursor:pointer;text-align:left}
+.card:hover{border-color:var(--acc)}.card small{color:var(--mut)}.card div{color:var(--acc);margin-top:10px;font-weight:700}
+.feat{display:grid;gap:14px;max-width:420px;text-align:left}.feat div{background:#ffffff0f;border-radius:12px;padding:16px;backdrop-filter:blur(8px)}.feat b{display:block;margin-bottom:4px}.feat span{color:var(--mut);font-size:14px}
+form{display:flex;gap:10px;flex-wrap:wrap}input{padding:13px 20px;border-radius:40px;border:1px solid #fff3;background:#ffffff0d;color:#fff;min-width:230px}
+#cfg{position:fixed;z-index:6;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));width:min(94vw,720px);background:#0b0d12d9;backdrop-filter:blur(16px);border:1px solid #ffffff1c;border-radius:20px;padding:14px 18px;display:grid;gap:10px}
+#tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{padding:8px 16px;border-radius:30px;border:1px solid #fff3;background:none;color:#fff;cursor:pointer;font-size:13px}.tab.on{background:#fff;color:#000}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+#sw{display:flex;gap:10px}.sw{width:30px;height:30px;border-radius:50%;border:2px solid #fff4;cursor:pointer}.sw.on{outline:2px solid #fff;outline-offset:3px}
+#info{font-size:12px;color:var(--mut);letter-spacing:.06em}#info b{color:#fff;font-size:15px}
+footer{position:relative;z-index:2;text-align:center;color:var(--mut);font-size:12px;padding:20px 20px 140px}
+</style></head><body>
+<nav><div class="logo">VEL<b>O</b>RA</div><div><a href="#models">MODELS</a><a href="#tech">TECH</a><a href="#contact">CONTACT</a></div></nav>
+<canvas id="c"></canvas>
+<section><h1>Engineered to <span>move you.</span></h1><p class="lead">Four models, one obsession: precision, power and presence. Choose a model and color below, then drag the car to look around.</p><div><a class="btn" href="#contact">BOOK TEST DRIVE</a></div></section>
+<section id="models" class="right"><h2>The Lineup</h2><p class="lead">Tap a model to see it in the showroom.</p><div class="cards" id="cards"></div></section>
+<section id="tech"><h2>Pure technology</h2><div class="feat"><div><b>Matrix LED headlights</b><span>Adaptive beams that follow the road.</span></div><div><b>Electrified powertrain</b><span>Instant torque, up to 720 hp.</span></div><div><b>Curved glass cockpit</b><span>Driver-focused display and assistance.</span></div></div></section>
+<section id="contact" class="right"><h2>Book a test drive</h2><p class="lead">Leave your email and we’ll contact you within 24 hours.</p><form onsubmit="event.preventDefault();this.innerHTML='<p class=lead>Thank you! We’ll be in touch.</p>'"><input type="email" placeholder="Your email" required><button class="btn">SEND</button></form></section>
+<footer>© 2026 VELORA Motors</footer>
+<div id="cfg"><div id="tabs"></div><div class="row"><div id="sw"></div><div id="info"></div></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const V=(x,y,z)=>new THREE.Vector3(x,y,z);
+const M={
+s:{n:'Velora S',t:'Sedan',L:4.75,hw:.92,b:.17,hood:.84,belt:1.0,deck:1.02,roof:1.44,f1:.34,f2:.8,R:.34,w:.24,st:'k',hp:'340 hp',a:'5.1 s',p:'$54,900',c:[['Glacier White',0xe9ecef],['Obsidian Black',0x0b0c0f],['Marina Blue',0x16408f],['Titan Grey',0x6b7076],['Ruby Red',0x9c1220]]},
+g:{n:'Velora GT',t:'Coupe',L:4.85,hw:.94,b:.14,hood:.8,belt:.96,deck:1.0,roof:1.36,f1:.4,f2:.77,R:.35,w:.26,st:'s',hp:'520 hp',a:'3.9 s',p:'$89,000',c:[['Champagne',0xc9b48a],['Graphite',0x2a2d33],['Silver Arrow',0xb8bcc2],['Midnight',0x0d1b3d],['Burgundy',0x5a0f1e]]},
+x:{n:'Velora X',t:'SUV',L:4.9,hw:.98,b:.26,hood:1.02,belt:1.24,deck:1.3,roof:1.74,f1:.3,f2:.88,R:.4,w:.28,st:'k',hp:'450 hp',a:'4.6 s',p:'$79,000',c:[['Alpine Green',0x1f3d2e],['Pearl White',0xf0f0ee],['Basalt',0x3a3d42],['Desert Sand',0xb59a74],['Cobalt',0x1d4fbf]]},
+r:{n:'Velora R',t:'Supercar',L:4.55,hw:1,b:.1,hood:.74,belt:.9,deck:.98,roof:1.22,f1:.38,f2:.72,R:.34,w:.3,st:'w',hp:'720 hp',a:'2.9 s',p:'$189,000',c:[['Solar Orange',0xf06a0c],['Racing Yellow',0xf2c400],['Signal Red',0xd01818],['Carbon Black',0x08080a],['Ice Blue',0x7fb4e6]]}};
+
+const cv=document.getElementById('c'),R=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+R.setPixelRatio(Math.min(devicePixelRatio,2));R.outputEncoding=THREE.sRGBEncoding;R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.05;
+const S=new THREE.Scene();S.background=new THREE.Color(0x07080b);S.fog=new THREE.Fog(0x07080b,10,24);
+const C=new THREE.PerspectiveCamera(36,1,.1,60);
+// studio environment for real reflections
+(function(){const e=new THREE.Scene();
+e.add(new THREE.Mesh(new THREE.BoxGeometry(30,14,30),new THREE.MeshBasicMaterial({color:0x12151b,side:1})));
+const pl=(w,h,x,y,z,rx,ry,i)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({color:new THREE.Color(i,i,i),side:2}));m.position.set(x,y,z);m.rotation.set(rx,ry,0);e.add(m)};
+pl(14,3,0,6.5,0,Math.PI/2,0,7);pl(3,6,-13,3.5,0,0,Math.PI/2,5);pl(3,6,13,3.5,0,0,Math.PI/2,4);pl(10,2,0,4,-13,0,0,3);pl(8,1.2,0,.8,13,0,0,2);
+const p=new THREE.PMREMGenerator(R);S.environment=p.fromScene(e,.03).texture;p.dispose()})();
+const dl=new THREE.DirectionalLight(0xffffff,1.1);dl.position.set(4,6,5);S.add(dl);
+const floor=new THREE.Mesh(new THREE.CircleGeometry(9,64),new THREE.MeshStandardMaterial({color:0x0c0e13,metalness:.7,roughness:.4}));floor.rotation.x=-Math.PI/2;S.add(floor);
+const sc=document.createElement('canvas');sc.width=sc.height=128;const sx=sc.getContext('2d'),gr=sx.createRadialGradient(64,64,4,64,64,64);gr.addColorStop(0,'rgba(0,0,0,.9)');gr.addColorStop(1,'rgba(0,0,0,0)');sx.fillStyle=gr;sx.fillRect(0,0,128,128);
+const shd=new THREE.Mesh(new THREE.PlaneGeometry(6.4,3.4),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(sc),transparent:true,depthWrite:false}));shd.rotation.x=-Math.PI/2;shd.position.y=.01;S.add(shd);
+const ring=new THREE.Mesh(new THREE.RingGeometry(3.9,3.94,96),new THREE.MeshBasicMaterial({color:0xff3b30,side:2}));ring.rotation.x=-Math.PI/2;ring.position.y=.012;S.add(ring);
+
+const paint=new THREE.MeshPhysicalMaterial({metalness:.6,roughness:.35,clearcoat:1,clearcoatRoughness:.03,side:2});
+const glassM=new THREE.MeshStandardMaterial({color:0x080b10,metalness:.9,roughness:.06,side:2,envMapIntensity:1.6});
+const tyreM=new THREE.MeshStandardMaterial({color:0x101010,roughness:.85}),alloy=new THREE.MeshStandardMaterial({color:0xd5d9df,metalness:1,roughness:.22}),dark=new THREE.MeshStandardMaterial({color:0x050505,roughness:.4,metalness:.5}),chrome=new THREE.MeshStandardMaterial({color:0xffffff,metalness:1,roughness:.1});
+const lamp=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xdbe6ff,emissiveIntensity:2.2}),tail=new THREE.MeshStandardMaterial({color:0x500000,emissive:0xff1010,emissiveIntensity:2.5});
+
+function loft(A,B,n,th0,th1,full,k){const cA=new THREE.CatmullRomCurve3(A),cB=new THREE.CatmullRomCurve3(B),Ms=80,N=44,pos=[],id=[],e=2/n;
+for(let i=0;i<=Ms;i++){const a=cA.getPoint(i/Ms),b=cB.getPoint(i/Ms),cy=(a.y+b.x)/2,hh=Math.max((a.y-b.x)/2,.004)*k,hw=Math.max(a.z,.004)*k;
+for(let j=0;j<N;j++){const t=th0+(th1-th0)*j/(full?N:N-1),c=Math.cos(t),s=Math.sin(t);pos.push(a.x,cy+hh*Math.sign(s)*Math.pow(Math.abs(s),e),hw*Math.sign(c)*Math.pow(Math.abs(c),e))}}
+for(let i=0;i<Ms;i++)for(let j=0;j<(full?N:N-1);j++){const a=i*N+j,b=i*N+(j+1)%N,c=(i+1)*N+j,d=(i+1)*N+(j+1)%N;id.push(a,c,b,b,c,d)}
+const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(id);g.computeVertexNormals();return g}
+
+function wheel(P){const R=P.R,w=P.w,g=new THREE.Group();
+const pr=[[.6,-.5],[.86,-.5],[.98,-.38],[1,-.1],[1,.1],[.98,.38],[.86,.5],[.6,.5]].map(a=>new THREE.Vector2(a[0]*R,a[1]*w));
+const t=new THREE.Mesh(new THREE.LatheGeometry(pr,40),tyreM);t.rotation.x=Math.PI/2;g.add(t);
+const br=new THREE.Mesh(new THREE.CylinderGeometry(R*.62,R*.62,w*.8,40),alloy);br.rotation.x=Math.PI/2;g.add(br);
+const bd=new THREE.Mesh(new THREE.CylinderGeometry(R*.5,R*.5,w*.5,40),dark);bd.rotation.x=Math.PI/2;bd.position.z=w*.18;g.add(bd);
+const dk=new THREE.Mesh(new THREE.CylinderGeometry(R*.5,R*.5,w*.1,40),new THREE.MeshStandardMaterial({color:0x8a8d92,metalness:1,roughness:.4}));dk.rotation.x=Math.PI/2;dk.position.z=w*.05;g.add(dk);
+for(let i=0;i<10;i++){const a=i*Math.PI/5,s=new THREE.Mesh(new THREE.BoxGeometry(R*.5,R*.075,w*.12),alloy);s.position.set(Math.cos(a)*R*.3,Math.sin(a)*R*.3,w*.34);s.rotation.z=a;g.add(s)}
+const cp=new THREE.Mesh(new THREE.CylinderGeometry(R*.1,R*.1,w*.1,20),chrome);cp.rotation.x=Math.PI/2;cp.position.z=w*.4;g.add(cp);
+const cal=new THREE.Mesh(new THREE.BoxGeometry(R*.2,R*.34,w*.3),new THREE.MeshStandardMaterial({color:0xc01010,roughness:.4}));cal.position.set(R*.38,0,w*.1);g.add(cal);return g}
+
+function build(k){const P=M[k],g=new THREE.Group(),L=P.L,hw=P.hw,b=P.b,X=f=>(.5-f)*L;
+const bf=[0,.02,.06,.15,.3,.45,.7,.84,.94,.985,1],H=P.hood;
+const top=[H*.66,H*.7,H*.88,H,H+.03,P.belt,P.belt,P.deck,P.deck*.98,P.deck*.9,P.deck*.75],bot=[b+.1,b+.07,b+.03,b,b,b,b,b,b+.02,b+.06,b+.12];
+top[0]=bot[0]=(top[1]+bot[1])/2;top[10]=bot[10]=(top[9]+bot[9])/2;
+const hws=[.05,.74,.9,.98,1,1,1,1,.96,.82,.05].map(v=>v*hw);
+g.add(new THREE.Mesh(loft(bf.map((f,i)=>V(X(f),top[i],hws[i])),bf.map((f,i)=>V(bot[i],0,0)),3,0,Math.PI*2,true,1),paint));
+const h=P.roof-P.belt,cf=[P.f1,P.f1+.08,P.f1+.17,(P.f1+P.f2)/2,P.f2-.17,P.f2-.09,P.f2],ch=[0,.55,.93,1,.95,.55,0].map(v=>v*h),cw=[.84,.8,.75,.73,.73,.76,.82].map(v=>v*hw);
+const CA=cf.map((f,i)=>V(X(f),P.belt+.01+ch[i],cw[i])),CB=cf.map(()=>V(P.belt-.2,0,0));
+g.add(new THREE.Mesh(loft(CA,CB,2.6,0,Math.PI*2,true,1),glassM));
+g.add(new THREE.Mesh(loft(CA,CB,2.6,Math.PI/2-.75,Math.PI/2+.75,false,1.006),paint));
+[.2,.8].forEach(f=>[1,-1].forEach(sd=>{const w=wheel(P);w.position.set(X(f),P.R,sd*(hw-P.w/2-.03));if(sd<0)w.rotation.y=Math.PI;g.add(w);
+const ar=new THREE.Mesh(new THREE.CylinderGeometry(P.R+.07,P.R+.07,2*hw+.03,40),dark);ar.rotation.x=Math.PI/2;ar.position.set(X(f),P.R,0);g.add(ar)}));
+[1,-1].forEach(sd=>{
+const hl=new THREE.Mesh(new THREE.BoxGeometry(.12,.06,hw*.4),lamp);hl.position.set(X(.045),H*.8,sd*hw*.66);hl.rotation.y=-sd*.35;g.add(hl);
+const tl=new THREE.Mesh(new THREE.BoxGeometry(.08,.07,hw*.45),tail);tl.position.set(X(.975),P.deck*.88,sd*hw*.62);tl.rotation.y=sd*.3;g.add(tl);
+const m=new THREE.Mesh(new THREE.BoxGeometry(.16,.08,.08),paint);m.position.set(X(P.f1+.03),P.belt+.07,sd*(hw*.98));g.add(m)});
+const gy=H*.52+b*.3,gx=X(.028);
+if(P.st=='k')[1,-1].forEach(sd=>{const q=new THREE.Mesh(new THREE.BoxGeometry(.1,.2*(k=='x'?1.3:1),.2),dark);q.position.set(gx,gy,sd*.12);g.add(q)});
+else{const q=new THREE.Mesh(new THREE.BoxGeometry(.1,P.st=='s'?.2:.1,hw*(P.st=='s'?.8:1.1)),dark);q.position.set(gx,gy,0);g.add(q);
+if(P.st=='s'){const o=new THREE.Mesh(new THREE.TorusGeometry(.07,.012,8,32),chrome);o.rotation.y=Math.PI/2;o.position.set(gx+.06,gy,0);g.add(o)}}
+const du=new THREE.Mesh(new THREE.BoxGeometry(L*.9,.04,hw*1.6),dark);du.position.y=b+.02;g.add(du);
+return g}
+
+let car=null,cur='s',grow=0,drag=0,tDrag=0,down=false,lx=0;
+function setColor(i){paint.color.setHex(M[cur].c[i][1]);paint.metalness=i==1&&cur=='s'?.8:.6;
+[...document.getElementById('sw').children].forEach((e,j)=>e.classList.toggle('on',i==j));
+document.getElementById('sw').title=M[cur].c[i][0];info(i)}
+function info(i){const P=M[cur];document.getElementById('info').innerHTML='<b>'+P.n+'</b> · '+P.t+' · '+M[cur].c[i][0]+'<br>'+P.hp+' · 0–100 in '+P.a+' · from '+P.p}
+function pick(k){cur=k;if(car)S.remove(car);car=build(k);car.scale.setScalar(.01);S.add(car);grow=0;
+[...document.getElementById('tabs').children].forEach(e=>e.classList.toggle('on',e.dataset.k==k));
+const sw=document.getElementById('sw');sw.innerHTML='';M[k].c.forEach((c,i)=>{const d=document.createElement('div');d.className='sw';d.title=c[0];d.style.background='#'+c[1].toString(16).padStart(6,'0');d.onclick=()=>setColor(i);sw.appendChild(d)});setColor(0)}
+Object.keys(M).forEach(k=>{const t=document.createElement('button');t.className='tab';t.dataset.k=k;t.textContent=M[k].n;t.onclick=()=>pick(k);document.getElementById('tabs').appendChild(t);
+const c=document.createElement('div');c.className='card';c.innerHTML='<b>'+M[k].n+'</b><br><small>'+M[k].t+'</small><div>from '+M[k].p+'</div>';c.onclick=()=>{pick(k);scrollTo({top:0})};document.getElementById('cards').appendChild(c)});
+pick('s');
+
+addEventListener('pointerdown',e=>{if(e.target.closest('a,button,input,.sw,.card,#cfg'))return;down=true;lx=e.clientX});
+addEventListener('pointerup',()=>down=false);addEventListener('pointermove',e=>{if(down){tDrag+=(e.clientX-lx)*.01;lx=e.clientX}});
+function size(){R.setSize(innerWidth,innerHeight,false);C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix()}addEventListener('resize',size);size();
+let t=0,cx=0,rot=.6;
+(function loop(){t+=.01;const max=document.body.scrollHeight-innerHeight,p=max>0?scrollY/max:0,wide=innerWidth>800;
+drag+=(tDrag-drag)*.08;grow=Math.min(1,grow+.04);car.scale.setScalar(.01+.99*(1-Math.pow(1-grow,3)));
+const target=p*Math.PI*2.2+drag+.6;rot+=(target-rot)*.06;car.rotation.y=rot;
+const idx=Math.round(scrollY/innerHeight),tx=wide?[1.4,-1.4,1.4,-1.4][Math.min(idx,3)]:0;cx+=(tx-cx)*.05;car.position.x=cx;shd.position.x=cx;shd.rotation.z=rot;ring.position.x=cx;
+C.position.set(0,2.2+p*.5,wide?8.6:11.5);C.lookAt(cx*.4,.7,0);
+R.render(S,C);requestAnimationFrame(loop)})();
+</script></body></html>
